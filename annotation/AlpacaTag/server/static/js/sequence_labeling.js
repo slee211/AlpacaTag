@@ -16,17 +16,31 @@ Vue.use(require('vue-shortkey'), {
 Vue.filter('simpleShortcut', simpleShortcut);
 
 Vue.component('annotator', {
-  template: '<div @click="setSelectedRange">\
-                    <span class="text-sequence"\
+  template: `<div @click="setSelectedRange">\
+                    <input class="text-sequence"\
                          v-for="r in chunks"\
                          v-if="id2label[r.label]"\
                          v-bind:class="{tag: id2label[r.label].text_color}"\
                          v-bind:style="{ color: id2label[r.label].text_color, backgroundColor: id2label[r.label].background_color, textDecoration: id2label[r.label].text_decoration}"\
-                    >{{ text.slice(r.start_offset, r.end_offset) }}<button class="delete is-small"\
-                                         v-if="id2label[r.label].text_color"\
-                                         @click="removeLabel(r)"></button></span>\
-               </div>',
+                    >{{ text.slice(r.start_offset, r.end_offset) }}
+<!--                        <input type="checkbox" id="checkbox" v-bind:style='{"border-color":id2label[r.label].background_color,"margin-top":"-2em","height":"1.35em","position":"absolute"}'\-->
+<!--                            v-if="id2label[r.label].text_color"\-->
+<!--                            v-on:change="checkingPosition(r)"-->
+<!--                        ></input>-->
+                            <b-form-checkbox-group
+                                id="checkbox-group-1"
+                                v-model="selected"
+                                name="flavour-1"
+                            <
+                       
+                       <button class="delete is-small"\
+                            v-if="id2label[r.label].text_color"\
+                            @click="removeLabel(r)">
+                       </button>
+                   </span>\
+               </div>`,
   props: {
+    //relationLabels: Array,
     labels: Array, // [{id: Integer, color: String, text: String}]
     text: String,
     entityPositions: Array, // [{'startOffset': 10, 'endOffset': 15, 'label_id': 1}]
@@ -36,6 +50,7 @@ Vue.component('annotator', {
     return {
       startOffset: 0,
       endOffset: 0,
+      checkedBoxes: [],
     };
   },
 
@@ -101,6 +116,18 @@ Vue.component('annotator', {
       return true;
     },
 
+    checkingPosition(index) {
+      let checkboxId = index.id
+      let idx = this.checkedBoxes.indexOf(checkboxId)
+      if (idx !== -1) {
+        this.checkedBoxes.splice(idx, 1);
+      } else {
+        this.checkedBoxes.push(checkboxId);
+      }
+
+      console.log(this.checkedBoxes);
+    },
+
     resetRange() {
       this.startOffset = 0;
       this.endOffset = 0;
@@ -129,6 +156,8 @@ Vue.component('annotator', {
     removeLabel(index) {
       this.$emit('remove-label', index);
     },
+
+
 
     makeLabel(startOffset, endOffset) {
       const label = {
